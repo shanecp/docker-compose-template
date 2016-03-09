@@ -1,0 +1,55 @@
+# main app data container
+# this is only for data, we don't have to keep it running  
+app:
+  build: './nginx/'
+  volumes:
+    - "./application:/var/www/html"
+  # run the command and exit the container
+  command: "true"  
+
+
+# public web server
+web:
+  build: './nginx/'
+  ports:
+    - "8080:80"
+  volumes_from:
+    - app
+  links:
+    - php
+
+# php-fpm for nginx
+php:
+  build: './php/'
+  volumes_from:
+    - app
+  links:
+    - mysql
+
+
+# db-data
+mysql_data:
+    image: mysql:latest
+    volumes:
+        - /var/lib/mysql
+    command: "true"
+
+mysql:
+    image: mysql:latest
+    volumes_from:
+        - mysql_data
+    environment:
+        MYSQL_ROOT_PASSWORD: secret
+        MYSQL_DATABASE: project
+        MYSQL_USER: project
+        MYSQL_PASSWORD: project
+
+# phpmyadmin
+# phpmyadmin:
+#     image: phpmyadmin/phpmyadmin
+#     ports:
+#         - 8090:80
+#     links:
+#         - mysql
+#     environment:
+#         PMA_HOST: mysql
